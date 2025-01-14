@@ -129,17 +129,23 @@ export class Block {
         if (this.lastHighlightedSide === side) return;
 
         const baseScale = 1.5;
-        const highlightScale = 2.0;
+        const highlightScale = 2.5;
         
         // Always keep non-highlighted items at original size
         this.leftAnswerSprite.scale.set(baseScale, baseScale, baseScale);
         this.rightAnswerSprite.scale.set(baseScale, baseScale, baseScale);
+        
+        // Reset materials to default
+        (this.leftAnswerSprite.material as THREE.SpriteMaterial).color.setHex(0xFFFFFF);
+        (this.rightAnswerSprite.material as THREE.SpriteMaterial).color.setHex(0xFFFFFF);
 
-        // Only scale up the currently highlighted item
+        // Only scale up and add glow to the currently highlighted item
         if (side === 'left') {
             this.leftAnswerSprite.scale.set(highlightScale, highlightScale, highlightScale);
+            (this.leftAnswerSprite.material as THREE.SpriteMaterial).color.setHex(0xFFFF00);
         } else if (side === 'right') {
             this.rightAnswerSprite.scale.set(highlightScale, highlightScale, highlightScale);
+            (this.rightAnswerSprite.material as THREE.SpriteMaterial).color.setHex(0xFFFF00);
         }
 
         this.lastHighlightedSide = side;
