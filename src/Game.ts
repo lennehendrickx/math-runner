@@ -178,6 +178,7 @@ export class Game {
                     // Reset consecutive correct count and multiplier on wrong answer
                     this.consecutiveCorrect = 0;
                     this.scoreMultiplier = 1;
+                    this.scoreManager.updateMultiplier(1);  // Make sure to update the display
                     
                     this.scoreManager.subtractPoints(5);
                     this.speedMultiplier = 0.7;
@@ -209,6 +210,7 @@ export class Game {
                 // Reset consecutive correct count and multiplier on collision
                 this.consecutiveCorrect = 0;
                 this.scoreMultiplier = 1;
+                this.scoreManager.updateMultiplier(1);  // Make sure to update the display
                 
                 this.scoreManager.subtractPoints(5);
                 this.rainEffect.startRain();
