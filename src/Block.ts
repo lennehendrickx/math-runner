@@ -11,6 +11,10 @@ export class Block {
     private isRightSideCorrect: boolean;
     private question: string;
     private isAnimating: boolean = false;
+    private leftAnswerSprite: THREE.Sprite;
+    private rightAnswerSprite: THREE.Sprite;
+    private lastHighlightedSide: 'none' | 'left' | 'right' = 'none';
+    private player: Player | null = null;
 
     constructor(num1: number, num2: number) {
         this.mesh = new THREE.Group();
@@ -20,18 +24,32 @@ export class Block {
         this.correctAnswer = num1 * num2;
         
         // Generate wrong answer close to the correct answer
+        let attempts = 0;
+        const maxAttempts = 10;
+        
         do {
-            // Generate a random offset between -3 and +3 (excluding 0)
-            const offset = Math.floor(Math.random() * 7) - 3;
-            if (offset === 0) continue; // Skip if offset is 0
+            attempts++;
             
-            // Apply the offset to the correct answer
-            this.wrongAnswer = this.correctAnswer + offset;
+            if (attempts >= maxAttempts) {
+                // Fallback: if we can't find a close number, generate one further away
+                const sign = Math.random() > 0.5 ? 1 : -1;
+                this.wrongAnswer = this.correctAnswer + (sign * (Math.floor(Math.random() * 5) + 4));
+                break;
+            }
             
-            // Make sure the wrong answer is positive
-            if (this.wrongAnswer <= 0) continue;
+            // Try to generate a number close to the correct answer
+            const offset = Math.floor(Math.random() * 7) - 3; // -3 to +3
+            if (offset === 0) continue;
             
-        } while (this.wrongAnswer === this.correctAnswer);
+            const potentialWrongAnswer = this.correctAnswer + offset;
+            
+            // Validate the wrong answer
+            if (potentialWrongAnswer > 0 && potentialWrongAnswer <= 100) {
+                this.wrongAnswer = potentialWrongAnswer;
+                break;
+            }
+            
+        } while (true);
 
         // Randomly decide which side is correct
         this.isRightSideCorrect = Math.random() > 0.5;
@@ -64,20 +82,22 @@ export class Block {
         questionSprite.position.set(0, 2.5, 0); // Moved higher up from 2 to 2.5
 
         // Create answer sprites with more distance from block
-        const leftAnswer = createTextSprite(
+        this.leftAnswerSprite = createTextSprite(
             String(this.isRightSideCorrect ? this.wrongAnswer : this.correctAnswer)
         );
-        leftAnswer.position.set(-3, 0.5, 0); // Changed from -1.5 to -3, added height
+        this.leftAnswerSprite.position.set(-2, 0.5, 0);
+        this.leftAnswerSprite.scale.set(1.5, 1.5, 1.5);
 
-        const rightAnswer = createTextSprite(
+        this.rightAnswerSprite = createTextSprite(
             String(this.isRightSideCorrect ? this.correctAnswer : this.wrongAnswer)
         );
-        rightAnswer.position.set(3, 0.5, 0); // Changed from 1.5 to 3, added height
+        this.rightAnswerSprite.position.set(2, 0.5, 0);
+        this.rightAnswerSprite.scale.set(1.5, 1.5, 1.5);
 
         this.mesh.add(blockMesh);
         this.mesh.add(questionSprite);
-        this.mesh.add(leftAnswer);
-        this.mesh.add(rightAnswer);
+        this.mesh.add(this.leftAnswerSprite);
+        this.mesh.add(this.rightAnswerSprite);
         this.mesh.position.copy(this.position);
     }
 
@@ -89,9 +109,40 @@ export class Block {
         return this.position.clone();
     }
 
-    update(deltaTime: number): void {
+    update(deltaTime: number, player: Player): void {
         this.position.z += this.speed * deltaTime;
         this.mesh.position.copy(this.position);
+        this.player = player;
+
+        // Update answer highlighting based only on x-position
+        const playerPos = player.getPosition();
+        if (playerPos.x <= -0.7) {
+            this.highlightAnswer('left');
+        } else if (playerPos.x >= 0.7) {
+            this.highlightAnswer('right');
+        } else {
+            this.highlightAnswer('none');
+        }
+    }
+
+    private highlightAnswer(side: 'none' | 'left' | 'right'): void {
+        if (this.lastHighlightedSide === side) return;
+
+        const baseScale = 1.5;
+        const highlightScale = 2.0;
+        
+        // Always keep non-highlighted items at original size
+        this.leftAnswerSprite.scale.set(baseScale, baseScale, baseScale);
+        this.rightAnswerSprite.scale.set(baseScale, baseScale, baseScale);
+
+        // Only scale up the currently highlighted item
+        if (side === 'left') {
+            this.leftAnswerSprite.scale.set(highlightScale, highlightScale, highlightScale);
+        } else if (side === 'right') {
+            this.rightAnswerSprite.scale.set(highlightScale, highlightScale, highlightScale);
+        }
+
+        this.lastHighlightedSide = side;
     }
 
     checkCollision(player: Player): boolean {
@@ -116,11 +167,11 @@ export class Block {
         const blockPos = this.position;
         
         if (Math.abs(playerPos.z - blockPos.z) < 0.8) {
-            if (playerPos.x <= -1) {
+            if (playerPos.x <= -0.7) {
                 const result = this.isRightSideCorrect ? 'incorrect' : 'correct';
                 this.playResultAnimation(result);
                 return result;
-            } else if (playerPos.x >= 1) {
+            } else if (playerPos.x >= 0.7) {
                 const result = this.isRightSideCorrect ? 'correct' : 'incorrect';
                 this.playResultAnimation(result);
                 return result;

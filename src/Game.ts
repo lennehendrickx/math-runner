@@ -69,6 +69,7 @@ export class Game {
 
         // Create player
         this.player = new Player();
+        (window as any).currentPlayer = this.player;  // Expose player globally
         this.scene.add(this.player.getMesh());
 
         // Setup lights
@@ -135,7 +136,7 @@ export class Game {
     private updateBlocks(deltaTime: number): void {
         for (let i = this.blocks.length - 1; i >= 0; i--) {
             const block = this.blocks[i];
-            block.update(deltaTime * this.speedMultiplier);
+            block.update(deltaTime * this.speedMultiplier, this.player);
 
             const scoringResult = block.checkScoring(this.player);
             if (scoringResult !== 'none') {
