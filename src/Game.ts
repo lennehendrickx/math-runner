@@ -57,9 +57,9 @@ export class Game {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
-        // Adjust camera position and angle - lower and closer
-        this.camera.position.set(0, 7, 12);     // Lower height and closer to player
-        this.camera.lookAt(0, -4, -25);         // Look down more aggressively
+        // Adjust camera position and angle - slightly higher
+        this.camera.position.set(0, 4, 8);      // Raised from 3 to 4
+        this.camera.lookAt(0, -2, -15);         // Keep same look target
 
         // Create background first (so it's behind everything)
         this.createBackground();
@@ -84,22 +84,22 @@ export class Game {
     }
 
     private createRoad(): void {
-        // Create main road
-        const roadGeometry = new THREE.PlaneGeometry(8, 500);  // Much longer road
+        // Create main road - even longer
+        const roadGeometry = new THREE.PlaneGeometry(8, 800);  // Much longer road
         const roadMaterial = new THREE.MeshPhongMaterial({ 
             color: 0x444444,
             side: THREE.DoubleSide 
         });
         const road = new THREE.Mesh(roadGeometry, roadMaterial);
         road.rotation.x = -Math.PI / 2;
-        road.position.y = 0;  // At ground level
-        road.position.z = -200;  // Centered further back
+        road.position.y = 0;
+        road.position.z = -300;  // Move further back to center the longer road
         this.scene.add(road);
 
-        // Create road stripes
+        // Create road stripes - more of them
         const stripeLength = 5;
         const stripeGap = 5;
-        const numStripes = 50;  // More stripes
+        const numStripes = 80;  // More stripes to cover the longer road
         const stripeWidth = 0.3;
 
         // Create stripes
@@ -113,8 +113,8 @@ export class Game {
             
             // Position stripe
             stripe.rotation.x = -Math.PI / 2;
-            stripe.position.y = 0.01;  // Just above road
-            stripe.position.z = 10 - i * (stripeLength + stripeGap);  // Start closer to player
+            stripe.position.y = 0.01;
+            stripe.position.z = 15 - i * (stripeLength + stripeGap);  // Start closer and extend further
             
             this.scene.add(stripe);
         }
@@ -240,26 +240,27 @@ export class Game {
         sky.position.y = 0;
         this.scene.add(sky);
 
-        // Enhanced cloud creation
+        // Enhanced cloud creation with bigger, more visible clouds
         const createCloud = () => {
             const cloud = new THREE.Group();
             const cloudMaterial = new THREE.MeshPhongMaterial({
                 color: 0xffffff,
-                emissive: 0x555555,
-                emissiveIntensity: 0.1,
+                emissive: 0x888888,        // Brighter emissive
+                emissiveIntensity: 0.2,    // Increased intensity
                 transparent: true,
-                opacity: 0.85
+                opacity: 0.9               // More opaque
             });
 
-            // More varied cloud shapes
+            // Bigger, more varied cloud shapes
             const sphereSizes = [
-                { radius: 1, x: 0, y: 0, z: 0 },
-                { radius: 0.9, x: 1, y: -0.2, z: 0.3 },
-                { radius: 0.8, x: -1, y: -0.1, z: -0.2 },
-                { radius: 0.85, x: 0.5, y: 0.2, z: 0.5 },
-                { radius: 0.75, x: -0.6, y: 0.3, z: -0.4 },
-                { radius: 0.7, x: 0.7, y: -0.3, z: -0.3 },
-                { radius: 0.65, x: -0.8, y: 0.1, z: 0.4 }
+                { radius: 2.0, x: 0, y: 0, z: 0 },      // Increased base size
+                { radius: 1.8, x: 2, y: -0.2, z: 0.3 },
+                { radius: 1.6, x: -2, y: -0.1, z: -0.2 },
+                { radius: 1.7, x: 1, y: 0.2, z: 0.5 },
+                { radius: 1.5, x: -1.2, y: 0.3, z: -0.4 },
+                { radius: 1.4, x: 1.4, y: -0.3, z: -0.3 },
+                { radius: 1.3, x: -1.6, y: 0.1, z: 0.4 },
+                { radius: 1.5, x: 0, y: 0.5, z: -0.8 }  // Added extra sphere
             ];
 
             sphereSizes.forEach(({ radius, x, y, z }) => {
@@ -273,13 +274,13 @@ export class Game {
         };
 
         // Add more clouds with varied placement
-        for (let i = 0; i < 40; i++) {  // Increased from 20 to 40 clouds
+        for (let i = 0; i < 60; i++) {  // Increased from 40 to 60 clouds
             const cloud = createCloud();
             
             // More varied cloud placement
             const angle = Math.random() * Math.PI * 2;
-            const radius = Math.random() * 250 + 50;  // Increased range
-            const height = Math.random() * 120 + 40;  // Increased height range
+            const radius = Math.random() * 200 + 50;    // Reduced radius range for more visible clouds
+            const height = Math.random() * 80 + 60;     // Higher minimum height
             
             cloud.position.x = Math.cos(angle) * radius;
             cloud.position.y = height;
@@ -287,9 +288,9 @@ export class Game {
             
             // More varied rotation and scaling
             cloud.rotation.y = Math.random() * Math.PI * 2;
-            cloud.rotation.z = Math.random() * 0.2 - 0.1;  // Slight tilt
-            const scale = Math.random() * 2.5 + 0.8;  // More size variation
-            cloud.scale.set(scale, scale * 0.5, scale * 0.8);
+            cloud.rotation.z = Math.random() * 0.2 - 0.1;
+            const scale = Math.random() * 3 + 1.5;      // Increased scale range
+            cloud.scale.set(scale, scale * 0.6, scale);
             
             this.scene.add(cloud);
         }
