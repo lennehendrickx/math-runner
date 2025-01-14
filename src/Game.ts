@@ -16,6 +16,8 @@ export class Game {
     private lastBlockSpawnTime: number;
     private readonly SPAWN_INTERVAL = 7000; // Changed from 5000 to 7000 (7 seconds between blocks)
     private speedMultiplier: number = 1; // Add speed multiplier
+    private scoreMultiplier: number = 1;  // Add score multiplier
+    private consecutiveCorrect: number = 0;  // Track consecutive correct answers
     private rainEffect: RainEffect;
     private sunEffect: SunEffect;
     private flowerEffect: FlowerEffect;
@@ -161,13 +163,22 @@ export class Game {
             const scoringResult = block.checkScoring(this.player);
             if (scoringResult !== 'none') {
                 if (scoringResult === 'correct') {
-                    this.scoreManager.addPoints(10);
+                    // Increase consecutive correct count and update multiplier
+                    this.consecutiveCorrect++;
+                    this.updateScoreMultiplier();
+                    
+                    // Add points with multiplier
+                    this.scoreManager.addPoints(Math.floor(10 * this.scoreMultiplier));
                     this.speedMultiplier = 1;
                     this.scoreManager.updateSpeed(1);
                     this.rainEffect.stopRain();
                     this.sunEffect.startShining();
                     this.flowerEffect.spawnFlowers();
                 } else {
+                    // Reset consecutive correct count and multiplier on wrong answer
+                    this.consecutiveCorrect = 0;
+                    this.scoreMultiplier = 1;
+                    
                     this.scoreManager.subtractPoints(5);
                     this.speedMultiplier = 0.7;
                     this.scoreManager.updateSpeed(0.7);
@@ -195,14 +206,16 @@ export class Game {
 
             // Check collision with block
             if (block.checkCollision(this.player)) {
+                // Reset consecutive correct count and multiplier on collision
+                this.consecutiveCorrect = 0;
+                this.scoreMultiplier = 1;
+                
                 this.scoreManager.subtractPoints(5);
-                // Start rain and reduce speed on collision
                 this.rainEffect.startRain();
                 this.sunEffect.stopShining();
                 this.speedMultiplier = 0.7;
                 this.scoreManager.updateSpeed(0.7);
                 
-                // Gradually restore speed
                 setTimeout(() => {
                     this.speedMultiplier = 0.85;
                     this.scoreManager.updateSpeed(0.85);
@@ -493,5 +506,19 @@ export class Game {
 
             this.scene.add(grass);
         }
+    }
+
+    private updateScoreMultiplier(): void {
+        // Increase multiplier based on consecutive correct answers
+        if (this.consecutiveCorrect >= 10) {
+            this.scoreMultiplier = 3.0;  // Triple points for 10+ correct
+        } else if (this.consecutiveCorrect >= 5) {
+            this.scoreMultiplier = 2.0;  // Double points for 5+ correct
+        } else if (this.consecutiveCorrect >= 3) {
+            this.scoreMultiplier = 1.5;  // 1.5x points for 3+ correct
+        }
+        
+        // Update score display with multiplier
+        this.scoreManager.updateMultiplier(this.scoreMultiplier);
     }
 } 

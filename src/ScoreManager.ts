@@ -2,7 +2,7 @@ export class ScoreManager {
     private score: number = 0;
     private scoreElement: HTMLDivElement;
     private speedElement: HTMLDivElement;
-    private speedMeter: HTMLDivElement;
+    private multiplierElement: HTMLDivElement;
     private scoreContainer: HTMLDivElement;
 
     constructor() {
@@ -51,9 +51,6 @@ export class ScoreManager {
         divider.style.margin = '15px auto';
         divider.style.borderRadius = '1px';
 
-        this.scoreContainer.appendChild(scoreContainer);
-        this.scoreContainer.appendChild(divider);
-
         // Create speed label
         const speedLabel = document.createElement('div');
         speedLabel.style.color = 'rgba(255, 255, 255, 0.9)';
@@ -72,12 +69,12 @@ export class ScoreManager {
         speedMeterContainer.style.position = 'relative';
 
         // Create speed meter bar
-        this.speedMeter = document.createElement('div');
-        this.speedMeter.style.width = '100%';
-        this.speedMeter.style.height = '100%';
-        this.speedMeter.style.backgroundColor = '#FFD700';
-        this.speedMeter.style.borderRadius = '12px';
-        this.speedMeter.style.transition = 'width 0.3s ease-out, background-color 0.3s ease-out';
+        const speedMeter = document.createElement('div');
+        speedMeter.style.width = '100%';
+        speedMeter.style.height = '100%';
+        speedMeter.style.backgroundColor = '#FFD700';
+        speedMeter.style.borderRadius = '12px';
+        speedMeter.style.transition = 'width 0.3s ease-out';
 
         // Create speed text element
         this.speedElement = document.createElement('div');
@@ -95,17 +92,34 @@ export class ScoreManager {
         this.speedElement.style.mixBlendMode = 'difference';
         this.speedElement.style.zIndex = '1';
 
-        speedMeterContainer.appendChild(this.speedMeter);
+        speedMeterContainer.appendChild(speedMeter);
         speedMeterContainer.appendChild(this.speedElement);
 
+        // Create multiplier element with improved styling
+        this.multiplierElement = document.createElement('div');
+        this.multiplierElement.style.position = 'absolute';
+        this.multiplierElement.style.top = '-15px';
+        this.multiplierElement.style.right = '-15px';
+        this.multiplierElement.style.backgroundColor = '#FFD700';
+        this.multiplierElement.style.color = '#FF1493';
+        this.multiplierElement.style.padding = '8px 12px';
+        this.multiplierElement.style.borderRadius = '15px';
+        this.multiplierElement.style.fontSize = '16px';
+        this.multiplierElement.style.fontFamily = "'Fredoka', sans-serif";
+        this.multiplierElement.style.fontWeight = '600';
+        this.multiplierElement.style.boxShadow = '0 2px 10px rgba(255, 215, 0, 0.5)';
+        this.multiplierElement.style.transform = 'rotate(15deg)';
+        this.multiplierElement.style.display = 'none';
+
+        // Add all elements to the container
+        this.scoreContainer.appendChild(scoreContainer);
+        this.scoreContainer.appendChild(divider);
         this.scoreContainer.appendChild(speedLabel);
         this.scoreContainer.appendChild(speedMeterContainer);
+        this.scoreContainer.appendChild(this.multiplierElement);
         document.body.appendChild(this.scoreContainer);
-        
-        this.updateDisplay();
-        this.updateSpeed(1);
 
-        // Add hover effect with scale and glow
+        // Add hover effect
         this.scoreContainer.addEventListener('mouseenter', () => {
             this.scoreContainer.style.transform = 'scale(1.02)';
             this.scoreContainer.style.boxShadow = '0 6px 25px rgba(255, 105, 180, 0.8)';
@@ -116,41 +130,45 @@ export class ScoreManager {
             this.scoreContainer.style.transform = 'scale(1)';
             this.scoreContainer.style.boxShadow = '0 4px 20px rgba(255, 105, 180, 0.6)';
         });
-    }
 
-    private updateDisplay(): void {
-        this.scoreElement.textContent = this.score.toString();
-    }
-
-    updateSpeed(multiplier: number): void {
-        const speedPercentage = Math.round(multiplier * 100);
-        this.speedElement.textContent = `${speedPercentage}%`;
-        
-        // Update speed meter
-        this.speedMeter.style.width = `${speedPercentage}%`;
-        
-        if (multiplier === 1) {
-            this.speedMeter.style.backgroundColor = '#FFD700'; // Gold
-        } else if (multiplier < 1) {
-            this.speedMeter.style.backgroundColor = '#FF6B6B'; // Red
-        } else {
-            this.speedMeter.style.backgroundColor = '#4DFF4D'; // Green
-        }
+        this.updateScore();
+        this.updateSpeed(1);
+        this.updateMultiplier(1);
     }
 
     addPoints(points: number): void {
         this.score += points;
-        this.updateDisplay();
+        this.updateScore();
         this.showPointsAnimation('+' + points, '#FFB6C1');
     }
 
     subtractPoints(points: number): void {
-        this.score -= points;
-        this.updateDisplay();
+        this.score = Math.max(0, this.score - points);
+        this.updateScore();
         this.showPointsAnimation('-' + points, '#FF69B4');
     }
 
-    private showPointsAnimation(text: string, color: string) {
+    private updateScore(): void {
+        this.scoreElement.textContent = this.score.toString();
+    }
+
+    updateSpeed(multiplier: number): void {
+        const percentage = Math.round(multiplier * 100);
+        this.speedElement.textContent = `${percentage}%`;
+    }
+
+    updateMultiplier(multiplier: number): void {
+        if (multiplier > 1) {
+            this.multiplierElement.textContent = `${multiplier}x`;
+            this.multiplierElement.style.display = 'block';
+            // Add pulse animation
+            this.multiplierElement.style.animation = 'pulse 1s infinite';
+        } else {
+            this.multiplierElement.style.display = 'none';
+        }
+    }
+
+    private showPointsAnimation(text: string, color: string): void {
         const animation = document.createElement('div');
         animation.textContent = text;
         animation.style.position = 'absolute';
@@ -176,9 +194,5 @@ export class ScoreManager {
         setTimeout(() => {
             document.body.removeChild(animation);
         }, 500);
-    }
-
-    getScore(): number {
-        return this.score;
     }
 } 
