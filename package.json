@@ -1,0 +1,22 @@
+{
+  "name": "math-runner-3d",
+  "version": "1.0.0",
+  "description": "A 3D math learning game",
+  "main": "dist/bundle.js",
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack serve"
+  },
+  "dependencies": {
+    "three": "^0.162.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.162.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.2",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.2",
+    "copy-webpack-plugin": "^11.0.0"
+  }
+}
