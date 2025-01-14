@@ -20,6 +20,14 @@ export class ScoreManager {
         this.scoreContainer.style.minWidth = '220px';
         this.scoreContainer.style.textAlign = 'center';
 
+        // Create score label
+        const scoreLabel = document.createElement('div');
+        scoreLabel.style.color = 'rgba(255, 255, 255, 0.9)';
+        scoreLabel.style.fontSize = '18px';
+        scoreLabel.style.fontFamily = "'Fredoka', sans-serif";
+        scoreLabel.style.marginBottom = '4px';
+        scoreLabel.textContent = 'SCORE';
+
         // Create score element with improved styling
         this.scoreElement = document.createElement('div');
         this.scoreElement.style.color = 'white';
@@ -29,6 +37,22 @@ export class ScoreManager {
         this.scoreElement.style.fontWeight = '600';
         this.scoreElement.style.marginBottom = '15px';
         this.scoreElement.style.letterSpacing = '2px';
+
+        // Create score container
+        const scoreContainer = document.createElement('div');
+        scoreContainer.appendChild(scoreLabel);
+        scoreContainer.appendChild(this.scoreElement);
+
+        // Add divider between score and speed
+        const divider = document.createElement('div');
+        divider.style.width = '80%';
+        divider.style.height = '2px';
+        divider.style.background = 'rgba(255, 255, 255, 0.3)';
+        divider.style.margin = '15px auto';
+        divider.style.borderRadius = '1px';
+
+        this.scoreContainer.appendChild(scoreContainer);
+        this.scoreContainer.appendChild(divider);
 
         // Create speed label
         const speedLabel = document.createElement('div');
@@ -74,16 +98,6 @@ export class ScoreManager {
         speedMeterContainer.appendChild(this.speedMeter);
         speedMeterContainer.appendChild(this.speedElement);
 
-        // Add divider between score and speed
-        const divider = document.createElement('div');
-        divider.style.width = '80%';
-        divider.style.height = '2px';
-        divider.style.background = 'rgba(255, 255, 255, 0.3)';
-        divider.style.margin = '15px auto';
-        divider.style.borderRadius = '1px';
-
-        this.scoreContainer.appendChild(this.scoreElement);
-        this.scoreContainer.appendChild(divider);
         this.scoreContainer.appendChild(speedLabel);
         this.scoreContainer.appendChild(speedMeterContainer);
         document.body.appendChild(this.scoreContainer);
@@ -105,7 +119,7 @@ export class ScoreManager {
     }
 
     private updateDisplay(): void {
-        this.scoreElement.textContent = `${this.score} ✨`;
+        this.scoreElement.textContent = this.score.toString();
     }
 
     updateSpeed(multiplier: number): void {
