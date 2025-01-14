@@ -19,9 +19,18 @@ export class Block {
         this.question = `${num1} × ${num2}`;
         this.correctAnswer = num1 * num2;
         
-        // Generate wrong answer (different from correct answer)
+        // Generate wrong answer close to the correct answer
         do {
-            this.wrongAnswer = (Math.floor(Math.random() * 81) + 1);
+            // Generate a random offset between -3 and +3 (excluding 0)
+            const offset = Math.floor(Math.random() * 7) - 3;
+            if (offset === 0) continue; // Skip if offset is 0
+            
+            // Apply the offset to the correct answer
+            this.wrongAnswer = this.correctAnswer + offset;
+            
+            // Make sure the wrong answer is positive
+            if (this.wrongAnswer <= 0) continue;
+            
         } while (this.wrongAnswer === this.correctAnswer);
 
         // Randomly decide which side is correct
