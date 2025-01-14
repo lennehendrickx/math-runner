@@ -4,7 +4,7 @@ export class FlowerEffect {
     private scene: THREE.Scene;
     private flowers: THREE.Group[] = [];
     private growthProgress: number[] = [];
-    private readonly GROWTH_DURATION = 1000; // 1 second to grow
+    private readonly GROWTH_DURATION = 1000;
     private readonly MAX_FLOWERS = 50;
 
     constructor(scene: THREE.Scene) {
@@ -14,35 +14,72 @@ export class FlowerEffect {
     private createFlower(): THREE.Group {
         const flower = new THREE.Group();
 
-        // Create stem
-        const stemGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 8);
-        const stemMaterial = new THREE.MeshPhongMaterial({ color: 0x228B22 });
+        // Create stem with better material
+        const stemGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.2, 8);
+        const stemMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x228B22,  // Forest green
+            shininess: 10
+        });
         const stem = new THREE.Mesh(stemGeometry, stemMaterial);
-        stem.position.y = 0.75;
+        stem.position.y = 0.6;
         flower.add(stem);
 
-        // Create petals
-        const petalColors = [0xFF69B4, 0xFFB6C1, 0xFFC0CB, 0xFF1493]; // Pink variations
-        const petalGeometry = new THREE.CircleGeometry(0.3, 5);
-        
-        for (let i = 0; i < 8; i++) {
-            const petalMaterial = new THREE.MeshPhongMaterial({ 
-                color: petalColors[Math.floor(Math.random() * petalColors.length)],
-                side: THREE.DoubleSide
-            });
-            const petal = new THREE.Mesh(petalGeometry, petalMaterial);
-            petal.position.y = 1.5;
-            petal.rotation.y = (i / 8) * Math.PI * 2;
-            petal.rotation.x = Math.PI / 4;
-            flower.add(petal);
-        }
+        // Create petals with more vibrant colors and better shape
+        const petalColors = [
+            0xFF69B4,  // Hot Pink
+            0xFF1493,  // Deep Pink
+            0xFFB6C1,  // Light Pink
+            0xFF69B4,  // Hot Pink
+            0xFFA07A,  // Light Salmon
+            0xFFC0CB,  // Pink
+            0xFF8C00,  // Dark Orange
+            0xFFDAB9   // Peach
+        ];
 
-        // Create center
-        const centerGeometry = new THREE.SphereGeometry(0.2, 16, 16);
-        const centerMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFF00 });
+        // Create two layers of petals for fuller appearance
+        [0.8, 0.6].forEach((scale, layer) => {
+            const petalCount = layer === 0 ? 8 : 6;
+            for (let i = 0; i < petalCount; i++) {
+                const petalGeometry = new THREE.CircleGeometry(0.25, 5);
+                const petalMaterial = new THREE.MeshPhongMaterial({ 
+                    color: petalColors[Math.floor(Math.random() * petalColors.length)],
+                    side: THREE.DoubleSide,
+                    shininess: 30
+                });
+                const petal = new THREE.Mesh(petalGeometry, petalMaterial);
+                petal.position.y = 1.2;
+                petal.rotation.y = (i / petalCount) * Math.PI * 2;
+                petal.rotation.x = Math.PI / 3;
+                petal.scale.multiplyScalar(scale);
+                flower.add(petal);
+            }
+        });
+
+        // Create center with more detail
+        const centerGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+        const centerMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0xFFD700,  // Gold
+            shininess: 50
+        });
         const center = new THREE.Mesh(centerGeometry, centerMaterial);
-        center.position.y = 1.5;
+        center.position.y = 1.2;
         flower.add(center);
+
+        // Add some leaves to the stem
+        const leafGeometry = new THREE.CircleGeometry(0.15, 4);
+        const leafMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x32CD32,  // Lime Green
+            side: THREE.DoubleSide,
+            shininess: 10
+        });
+
+        [-1, 1].forEach(side => {
+            const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+            leaf.position.set(0.1 * side, 0.4, 0);
+            leaf.rotation.z = Math.PI / 4 * side;
+            leaf.rotation.x = Math.PI / 3;
+            flower.add(leaf);
+        });
 
         // Start with scale 0 to grow
         flower.scale.set(0, 0, 0);
@@ -66,10 +103,10 @@ export class FlowerEffect {
         for (let i = 0; i < numNewFlowers; i++) {
             const flower = this.createFlower();
             
-            // Random position near the road
+            // Random position near the road with better spacing
             const side = Math.random() < 0.5 ? -1 : 1;
-            const x = (6 + Math.random() * 10) * side;
-            const z = -Math.random() * 100;
+            const x = (7 + Math.random() * 8) * side;  // Further from road
+            const z = -Math.random() * 80;  // Spread out more
             
             flower.position.set(x, 0, z);
             flower.rotation.y = Math.random() * Math.PI * 2;
@@ -81,20 +118,20 @@ export class FlowerEffect {
     }
 
     update(): void {
-        const deltaTime = 16.67; // Approximately 60 FPS
+        const deltaTime = 16.67;
         
         for (let i = this.flowers.length - 1; i >= 0; i--) {
             const flower = this.flowers[i];
             this.growthProgress[i] = Math.min(this.growthProgress[i] + deltaTime, this.GROWTH_DURATION);
             
-            // Smooth growth animation
+            // Smoother growth animation
             const progress = this.growthProgress[i] / this.GROWTH_DURATION;
             const scale = THREE.MathUtils.smoothstep(progress, 0, 1);
             
             flower.scale.set(scale, scale, scale);
             
             // Add gentle swaying motion
-            const sway = Math.sin(Date.now() * 0.002 + flower.position.x) * 0.1;
+            const sway = Math.sin(Date.now() * 0.002 + flower.position.x) * 0.05;
             flower.rotation.z = sway;
         }
     }
