@@ -3,6 +3,8 @@ import { Player } from './Player';
 import { Block } from './Block';
 import { ScoreManager } from './ScoreManager';
 import { RainEffect } from './RainEffect';
+import { SunEffect } from './SunEffect';
+import { FlowerEffect } from './FlowerEffect';
 
 export class Game {
     private scene: THREE.Scene;
@@ -15,10 +17,14 @@ export class Game {
     private readonly SPAWN_INTERVAL = 7000; // Changed from 5000 to 7000 (7 seconds between blocks)
     private speedMultiplier: number = 1; // Add speed multiplier
     private rainEffect: RainEffect;
+    private sunEffect: SunEffect;
+    private flowerEffect: FlowerEffect;
 
     constructor() {
         this.scene = new THREE.Scene();
         this.rainEffect = new RainEffect(this.scene);
+        this.sunEffect = new SunEffect(this.scene);
+        this.flowerEffect = new FlowerEffect(this.scene);
 
         this.camera = new THREE.PerspectiveCamera(
             75,
@@ -51,9 +57,9 @@ export class Game {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
-        // Setup camera with new position and angle
-        this.camera.position.set(0, 6, 8);
-        this.camera.lookAt(0, 0, -20);
+        // Adjust camera position and angle - lower and closer
+        this.camera.position.set(0, 7, 12);     // Lower height and closer to player
+        this.camera.lookAt(0, -4, -25);         // Look down more aggressively
 
         // Create background first (so it's behind everything)
         this.createBackground();
@@ -78,15 +84,40 @@ export class Game {
     }
 
     private createRoad(): void {
-        const roadGeometry = new THREE.PlaneGeometry(8, 150);
+        // Create main road
+        const roadGeometry = new THREE.PlaneGeometry(8, 500);  // Much longer road
         const roadMaterial = new THREE.MeshPhongMaterial({ 
             color: 0x444444,
             side: THREE.DoubleSide 
         });
         const road = new THREE.Mesh(roadGeometry, roadMaterial);
         road.rotation.x = -Math.PI / 2;
-        road.position.z = -50;
+        road.position.y = 0;  // At ground level
+        road.position.z = -200;  // Centered further back
         this.scene.add(road);
+
+        // Create road stripes
+        const stripeLength = 5;
+        const stripeGap = 5;
+        const numStripes = 50;  // More stripes
+        const stripeWidth = 0.3;
+
+        // Create stripes
+        for (let i = 0; i < numStripes; i++) {
+            const stripeGeometry = new THREE.PlaneGeometry(stripeWidth, stripeLength);
+            const stripeMaterial = new THREE.MeshBasicMaterial({
+                color: 0xFFFFFF,
+                side: THREE.DoubleSide
+            });
+            const stripe = new THREE.Mesh(stripeGeometry, stripeMaterial);
+            
+            // Position stripe
+            stripe.rotation.x = -Math.PI / 2;
+            stripe.position.y = 0.01;  // Just above road
+            stripe.position.z = 10 - i * (stripeLength + stripeGap);  // Start closer to player
+            
+            this.scene.add(stripe);
+        }
     }
 
     private handleKeyDown(event: KeyboardEvent): void {
@@ -112,14 +143,15 @@ export class Game {
                     this.scoreManager.addPoints(10);
                     this.speedMultiplier = 1;
                     this.scoreManager.updateSpeed(1);
-                    // Stop rain on correct answer
                     this.rainEffect.stopRain();
+                    this.sunEffect.startShining();
+                    this.flowerEffect.spawnFlowers();
                 } else {
                     this.scoreManager.subtractPoints(5);
                     this.speedMultiplier = 0.7;
                     this.scoreManager.updateSpeed(0.7);
-                    // Start rain on wrong answer
                     this.rainEffect.startRain();
+                    this.sunEffect.stopShining();
                     
                     setTimeout(() => {
                         this.speedMultiplier = 0.85;
@@ -186,6 +218,8 @@ export class Game {
 
             // Update rain effect
             this.rainEffect.update();
+            this.sunEffect.update();
+            this.flowerEffect.update();
 
             this.renderer.render(this.scene, this.camera);
         };
