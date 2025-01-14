@@ -136,8 +136,17 @@ export class Block {
         const playerPos = player.getPosition();
         const blockPos = this.position;
         
-        // Collision check with just the z-position since there's no physical block
-        return Math.abs(playerPos.z - blockPos.z) < 0.5;
+        // Only check collision if we're not already scoring
+        if (this.isAnimating) return false;
+        
+        // Check if player is in scoring range
+        if (Math.abs(playerPos.z - blockPos.z) < 0.8) {
+            // Player is in the middle (between -0.7 and 0.7) when they should choose a side
+            if (playerPos.x > -0.7 && playerPos.x < 0.7) {
+                return true;  // Trigger collision for passing between items
+            }
+        }
+        return false;
     }
 
     isCorrectSide(isRightSide: boolean): boolean {
@@ -145,12 +154,11 @@ export class Block {
     }
 
     checkScoring(player: Player): 'none' | 'correct' | 'incorrect' {
-        if (this.isAnimating) return 'none';
-        
         const playerPos = player.getPosition();
         const blockPos = this.position;
         
-        if (Math.abs(playerPos.z - blockPos.z) < 0.8) {
+        // Only check scoring if we're in range and not already animating
+        if (!this.isAnimating && Math.abs(playerPos.z - blockPos.z) < 0.8) {
             if (playerPos.x <= -0.7) {
                 const result = this.isRightSideCorrect ? 'incorrect' : 'correct';
                 this.playResultAnimation(result);
