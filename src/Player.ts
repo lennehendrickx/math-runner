@@ -11,7 +11,7 @@ export class Player {
 
     constructor() {
         this.mesh = new THREE.Group();
-        this.position = new THREE.Vector3(0, 0.5, 0);
+        this.position = new THREE.Vector3(0, 0.5, 2);
 
         // Create unicorn body
         const bodyGeometry = new THREE.CapsuleGeometry(0.3, 0.6, 4, 8);

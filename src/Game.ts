@@ -57,9 +57,9 @@ export class Game {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
-        // Adjust camera position and angle - slightly higher
-        this.camera.position.set(0, 4, 8);      // Raised from 3 to 4
-        this.camera.lookAt(0, -2, -15);         // Keep same look target
+        // Adjust camera position and angle - bring player closer to screen
+        this.camera.position.set(0, 4, 6);      // Changed from 8 to 6
+        this.camera.lookAt(0, -1, -10);         // Changed from -2, -15 to -1, -10
 
         // Create background first (so it's behind everything)
         this.createBackground();
