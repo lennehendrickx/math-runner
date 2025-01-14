@@ -58,28 +58,70 @@ export class Block {
     }
 
     private createBlock(): void {
-        // Create main block with gradient material
+        // Create main hay bale block
         const geometry = new THREE.BoxGeometry(2, 1, 1);
         const material = new THREE.MeshPhongMaterial({ 
-            color: 0xFF69B4, // Hot pink
-            shininess: 100,
-            specular: 0xFFFFFF
+            color: 0xF4D03F, // Hay yellow color
+            shininess: 5,     // Less shiny for a matte straw look
+            specular: 0x111111, // Minimal specular highlight
+            flatShading: true   // For a rougher look
         });
         const blockMesh = new THREE.Mesh(geometry, material);
 
-        // Add glow effect
+        // Add darker edges to simulate hay texture
+        const edgeGeometry = new THREE.EdgesGeometry(geometry);
+        const edgeMaterial = new THREE.LineBasicMaterial({ 
+            color: 0xD4B02F,  // Slightly darker than the base color
+            linewidth: 2
+        });
+        const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+        blockMesh.add(edges);
+
+        // Add horizontal lines to simulate hay strands
+        const hayLinesGeometry = new THREE.BufferGeometry();
+        const hayLines = [];
+        const numLines = 8;
+        for (let i = 0; i < numLines; i++) {
+            const y = -0.4 + (i * 0.1);  // Spread lines vertically
+            hayLines.push(-1, y, 0.501);  // Front face
+            hayLines.push(1, y, 0.501);
+            hayLines.push(-1, y, -0.501); // Back face
+            hayLines.push(1, y, -0.501);
+        }
+        hayLinesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(hayLines, 3));
+        const hayLinesMaterial = new THREE.LineBasicMaterial({ color: 0xD4B02F });
+        const hayLinesObject = new THREE.LineSegments(hayLinesGeometry, hayLinesMaterial);
+        blockMesh.add(hayLinesObject);
+
+        // Add vertical lines
+        const verticalLinesGeometry = new THREE.BufferGeometry();
+        const verticalLines = [];
+        const numVerticals = 10;
+        for (let i = 0; i < numVerticals; i++) {
+            const x = -1 + (i * 0.2);
+            verticalLines.push(x, -0.5, 0.501);  // Front face
+            verticalLines.push(x, 0.5, 0.501);
+            verticalLines.push(x, -0.5, -0.501); // Back face
+            verticalLines.push(x, 0.5, -0.501);
+        }
+        verticalLinesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(verticalLines, 3));
+        const verticalLinesMaterial = new THREE.LineBasicMaterial({ color: 0xD4B02F });
+        const verticalLinesObject = new THREE.LineSegments(verticalLinesGeometry, verticalLinesMaterial);
+        blockMesh.add(verticalLinesObject);
+
+        // Add subtle glow effect
         const glowGeometry = new THREE.BoxGeometry(2.2, 1.2, 1.2);
         const glowMaterial = new THREE.MeshBasicMaterial({
-            color: 0xFF1493,
+            color: 0xF4D03F,
             transparent: true,
-            opacity: 0.3
+            opacity: 0.15
         });
         const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
         blockMesh.add(glowMesh);
 
         // Create question sprite above the block
         const questionSprite = createTextSprite(this.question);
-        questionSprite.position.set(0, 2.5, 0); // Moved higher up from 2 to 2.5
+        questionSprite.position.set(0, 2.5, 0);
 
         // Create answer sprites with more distance from block
         this.leftAnswerSprite = createTextSprite(

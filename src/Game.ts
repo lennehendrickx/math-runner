@@ -176,8 +176,22 @@ export class Game {
             // Check collision with block
             if (block.checkCollision(this.player)) {
                 this.scoreManager.subtractPoints(5);
-                // Start rain on collision
+                // Start rain and reduce speed on collision
                 this.rainEffect.startRain();
+                this.sunEffect.stopShining();
+                this.speedMultiplier = 0.7;
+                this.scoreManager.updateSpeed(0.7);
+                
+                // Gradually restore speed
+                setTimeout(() => {
+                    this.speedMultiplier = 0.85;
+                    this.scoreManager.updateSpeed(0.85);
+                    setTimeout(() => {
+                        this.speedMultiplier = 1;
+                        this.scoreManager.updateSpeed(1);
+                    }, 3000);
+                }, 3000);
+
                 this.scene.remove(block.getMesh());
                 this.blocks.splice(i, 1);
                 continue;
