@@ -244,6 +244,84 @@ export class Game {
             this.scene.add(cloud);
         }
 
+        // Create a tree function
+        const createTree = () => {
+            const tree = new THREE.Group();
+
+            // Create trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.5, 2, 8);
+            const trunkMaterial = new THREE.MeshPhongMaterial({
+                color: 0x8B4513,  // Saddle brown
+                shininess: 5
+            });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 1;
+
+            // Create foliage (multiple layers of cones)
+            const foliageMaterial = new THREE.MeshPhongMaterial({
+                color: 0x228B22,  // Forest green
+                shininess: 10
+            });
+
+            const foliageLayers = [
+                { radius: 2, height: 3, y: 2.5 },
+                { radius: 1.6, height: 2.4, y: 3.5 },
+                { radius: 1.2, height: 1.8, y: 4.3 }
+            ];
+
+            foliageLayers.forEach(({ radius, height, y }) => {
+                const foliageGeometry = new THREE.ConeGeometry(radius, height, 8);
+                const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+                foliage.position.y = y;
+                tree.add(foliage);
+            });
+
+            tree.add(trunk);
+            return tree;
+        };
+
+        // Add type definition for tree positions
+        interface TreePosition {
+            x: number;
+            z: number;
+        }
+
+        // Add trees around the road
+        const addTrees = () => {
+            const treePositions: TreePosition[] = [];
+            const numTrees = 100;
+
+            for (let i = 0; i < numTrees; i++) {
+                // Generate random position
+                const angle = Math.random() * Math.PI * 2;
+                const radiusFromCenter = Math.random() * 80 + 20; // Between 20 and 100 units from center
+                const x = Math.cos(angle) * radiusFromCenter;
+                const z = Math.sin(angle) * radiusFromCenter - 50; // Offset by road position
+
+                // Don't place trees too close to the road
+                if (Math.abs(x) < 6) continue;  // Skip positions too close to road
+
+                // Check distance from other trees
+                const tooClose = treePositions.some(pos => {
+                    const dx = pos.x - x;
+                    const dz = pos.z - z;
+                    return Math.sqrt(dx * dx + dz * dz) < 8;  // Minimum distance between trees
+                });
+
+                if (!tooClose) {
+                    const tree = createTree();
+                    tree.position.set(x, 0, z);
+                    
+                    tree.rotation.y = Math.random() * Math.PI * 2;
+                    const scale = Math.random() * 0.4 + 0.8;
+                    tree.scale.set(scale, scale, scale);
+                    
+                    this.scene.add(tree);
+                    treePositions.push({ x, z });
+                }
+            }
+        };
+
         // Create ground plane
         const groundGeometry = new THREE.PlaneGeometry(200, 200, 50, 50);
         const groundMaterial = new THREE.MeshPhongMaterial({ 
@@ -275,7 +353,11 @@ export class Game {
         this.scene.add(ground);
         this.scene.add(solidGround);
 
-        // Add some fog for depth effect (lighter color to match sky)
-        this.scene.fog = new THREE.Fog(0xE0F6FF, 20, 100);
+        // Add trees after creating the ground
+        addTrees();
+
+        // Add some fog for depth effect with adjusted values
+        const fogColor = new THREE.Color('#87CEEB');  // Match sky color
+        this.scene.fog = new THREE.Fog(fogColor, 50, 150);  // Start further away and fade more gradually
     }
 } 
