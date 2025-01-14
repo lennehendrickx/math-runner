@@ -133,10 +133,30 @@ export class Game {
         this.renderer.setSize(width, height);
     }
 
+    private findNearestBlock(): Block | null {
+        let nearestBlock: Block | null = null;
+        let nearestDistance = Infinity;
+        
+        for (const block of this.blocks) {
+            const blockPos = block.getPosition();
+            const distance = blockPos.z - this.player.getPosition().z;
+            // Only consider blocks in front of the player
+            if (distance < 0 && distance > -40) {  // -40 to limit the range
+                if (Math.abs(distance) < nearestDistance) {
+                    nearestDistance = Math.abs(distance);
+                    nearestBlock = block;
+                }
+            }
+        }
+        return nearestBlock;
+    }
+
     private updateBlocks(deltaTime: number): void {
+        const nearestBlock = this.findNearestBlock();
+        
         for (let i = this.blocks.length - 1; i >= 0; i--) {
             const block = this.blocks[i];
-            block.update(deltaTime * this.speedMultiplier, this.player);
+            block.update(deltaTime * this.speedMultiplier, this.player, block === nearestBlock);
 
             const scoringResult = block.checkScoring(this.player);
             if (scoringResult !== 'none') {

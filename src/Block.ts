@@ -90,18 +90,23 @@ export class Block {
         return this.position.clone();
     }
 
-    update(deltaTime: number, player: Player): void {
+    update(deltaTime: number, player: Player, isNearest: boolean = false): void {
         this.position.z += this.speed * deltaTime;
         this.mesh.position.copy(this.position);
         this.player = player;
 
-        // Update answer highlighting based only on x-position
-        const playerPos = player.getPosition();
-        if (playerPos.x <= -0.7) {
-            this.highlightAnswer('left');
-        } else if (playerPos.x >= 0.7) {
-            this.highlightAnswer('right');
+        // Only update highlighting if this is the nearest block
+        if (isNearest) {
+            const playerPos = player.getPosition();
+            if (playerPos.x <= -0.7) {
+                this.highlightAnswer('left');
+            } else if (playerPos.x >= 0.7) {
+                this.highlightAnswer('right');
+            } else {
+                this.highlightAnswer('none');
+            }
         } else {
+            // Ensure non-nearest blocks have no highlight
             this.highlightAnswer('none');
         }
     }
