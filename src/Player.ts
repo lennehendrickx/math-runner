@@ -4,6 +4,10 @@ export class Player {
     private mesh: THREE.Group;
     private speed: number = 5;
     private position: THREE.Vector3;
+    private readonly MIN_Z = 0;      // Closest to camera
+    private readonly MAX_Z = 4;      // Furthest from camera
+    private readonly MIN_X = -3.5;   // Leftmost position
+    private readonly MAX_X = 3.5;    // Rightmost position
 
     constructor() {
         this.mesh = new THREE.Group();
@@ -102,13 +106,23 @@ export class Player {
     handleInput(key: string): void {
         switch (key) {
             case 'ArrowLeft':
-                if (this.position.x > -3.5) {
+                if (this.position.x > this.MIN_X) {
                     this.position.x -= 0.5;
                 }
                 break;
             case 'ArrowRight':
-                if (this.position.x < 3.5) {
+                if (this.position.x < this.MAX_X) {
                     this.position.x += 0.5;
+                }
+                break;
+            case 'ArrowUp':
+                if (this.position.z > this.MIN_Z) {
+                    this.position.z -= 0.5;
+                }
+                break;
+            case 'ArrowDown':
+                if (this.position.z < this.MAX_Z) {
+                    this.position.z += 0.5;
                 }
                 break;
         }

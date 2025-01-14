@@ -16,13 +16,12 @@ export class Game {
 
     constructor() {
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color('#FF69B4'); // Hot pink background
 
         this.camera = new THREE.PerspectiveCamera(
             75,
             window.innerWidth / window.innerHeight,
             0.1,
-            1000
+            2000
         );
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.blocks = [];
@@ -182,12 +181,75 @@ export class Game {
     }
 
     private createBackground(): void {
-        // Create a large ground plane
-        const groundGeometry = new THREE.PlaneGeometry(200, 200, 50, 50);  // Added segments for grid
+        // Create sky dome with simpler setup
+        const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+        const skyMaterial = new THREE.MeshBasicMaterial({
+            color: new THREE.Color('#87CEEB'),  // Sky blue
+            side: THREE.BackSide,
+            fog: false
+        });
+        
+        const sky = new THREE.Mesh(skyGeometry, skyMaterial);
+        sky.position.y = 0;
+        this.scene.add(sky);
+
+        // Create clouds
+        const createCloud = () => {
+            const cloud = new THREE.Group();
+            const cloudMaterial = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                emissive: 0x555555,
+                emissiveIntensity: 0.1,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            // Create several spheres for each cloud
+            const sphereSizes = [
+                { radius: 1, x: 0, y: 0, z: 0 },
+                { radius: 0.8, x: 0.8, y: -0.2, z: 0 },
+                { radius: 0.7, x: -0.8, y: -0.2, z: 0 },
+                { radius: 0.7, x: 0.4, y: 0.2, z: 0.3 },
+                { radius: 0.6, x: -0.4, y: 0.2, z: -0.3 }
+            ];
+
+            sphereSizes.forEach(({ radius, x, y, z }) => {
+                const geometry = new THREE.SphereGeometry(radius, 16, 16);
+                const sphere = new THREE.Mesh(geometry, cloudMaterial);
+                sphere.position.set(x, y, z);
+                cloud.add(sphere);
+            });
+
+            return cloud;
+        };
+
+        // Add multiple clouds at random positions
+        for (let i = 0; i < 20; i++) {
+            const cloud = createCloud();
+            
+            // Position cloud randomly in the sky
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.random() * 200 + 100; // Distance from center
+            const height = Math.random() * 100 + 50;  // Height above ground
+            
+            cloud.position.x = Math.cos(angle) * radius;
+            cloud.position.y = height;
+            cloud.position.z = Math.sin(angle) * radius;
+            
+            // Random rotation and scale for variety
+            cloud.rotation.y = Math.random() * Math.PI;
+            const scale = Math.random() * 2 + 1;
+            cloud.scale.set(scale, scale * 0.6, scale);
+            
+            this.scene.add(cloud);
+        }
+
+        // Create ground plane
+        const groundGeometry = new THREE.PlaneGeometry(200, 200, 50, 50);
         const groundMaterial = new THREE.MeshPhongMaterial({ 
             color: 0x90EE90,  // Light green
             side: THREE.DoubleSide,
-            wireframe: true,   // Show grid pattern
+            wireframe: true,
             transparent: true,
             opacity: 0.6
         });
@@ -201,9 +263,9 @@ export class Game {
         });
         const solidGround = new THREE.Mesh(solidGroundGeometry, solidGroundMaterial);
 
-        // Position both grounds
+        // Position grounds
         ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -0.49;  // Slightly above solid ground
+        ground.position.y = -0.49;
         ground.position.z = -50;
 
         solidGround.rotation.x = -Math.PI / 2;
@@ -213,7 +275,7 @@ export class Game {
         this.scene.add(ground);
         this.scene.add(solidGround);
 
-        // Add some fog for depth effect
-        this.scene.fog = new THREE.Fog(0xFF69B4, 20, 100);
+        // Add some fog for depth effect (lighter color to match sky)
+        this.scene.fog = new THREE.Fog(0xE0F6FF, 20, 100);
     }
 } 

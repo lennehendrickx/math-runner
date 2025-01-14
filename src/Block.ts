@@ -89,10 +89,10 @@ export class Block {
         const playerPos = player.getPosition();
         const blockPos = this.position;
         
-        // Block is 2 units wide (-1 to 1)
+        // Block is 2 units wide (-1 to 1) and 1 unit deep
         return (
             Math.abs(playerPos.x) < 1 && // Player is in block's x-range
-            Math.abs(playerPos.z - blockPos.z) < 0.8 // Close enough in z-direction
+            Math.abs(playerPos.z - blockPos.z) < 0.5 // Closer collision check in z-direction
         );
     }
 
@@ -106,7 +106,7 @@ export class Block {
         const playerPos = player.getPosition();
         const blockPos = this.position;
         
-        if (Math.abs(playerPos.z - blockPos.z) < 1) {
+        if (Math.abs(playerPos.z - blockPos.z) < 0.8) {
             if (playerPos.x <= -1) {
                 const result = this.isRightSideCorrect ? 'incorrect' : 'correct';
                 this.playResultAnimation(result);
