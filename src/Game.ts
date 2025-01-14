@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Player } from './Player';
 import { Block } from './Block';
 import { ScoreManager } from './ScoreManager';
+import { RainEffect } from './RainEffect';
 
 export class Game {
     private scene: THREE.Scene;
@@ -13,9 +14,11 @@ export class Game {
     private lastBlockSpawnTime: number;
     private readonly SPAWN_INTERVAL = 7000; // Changed from 5000 to 7000 (7 seconds between blocks)
     private speedMultiplier: number = 1; // Add speed multiplier
+    private rainEffect: RainEffect;
 
     constructor() {
         this.scene = new THREE.Scene();
+        this.rainEffect = new RainEffect(this.scene);
 
         this.camera = new THREE.PerspectiveCamera(
             75,
@@ -109,10 +112,15 @@ export class Game {
                     this.scoreManager.addPoints(10);
                     this.speedMultiplier = 1;
                     this.scoreManager.updateSpeed(1);
+                    // Stop rain on correct answer
+                    this.rainEffect.stopRain();
                 } else {
                     this.scoreManager.subtractPoints(5);
                     this.speedMultiplier = 0.7;
                     this.scoreManager.updateSpeed(0.7);
+                    // Start rain on wrong answer
+                    this.rainEffect.startRain();
+                    
                     setTimeout(() => {
                         this.speedMultiplier = 0.85;
                         this.scoreManager.updateSpeed(0.85);
@@ -132,9 +140,11 @@ export class Game {
                 continue;
             }
 
-            // Check collision with block (game over or penalty)
+            // Check collision with block
             if (block.checkCollision(this.player)) {
-                this.scoreManager.subtractPoints(5); // Penalty for hitting block
+                this.scoreManager.subtractPoints(5);
+                // Start rain on collision
+                this.rainEffect.startRain();
                 this.scene.remove(block.getMesh());
                 this.blocks.splice(i, 1);
                 continue;
@@ -174,6 +184,9 @@ export class Game {
             this.updateBlocks(deltaTime);
             this.player.update(deltaTime);
 
+            // Update rain effect
+            this.rainEffect.update();
+
             this.renderer.render(this.scene, this.camera);
         };
 
@@ -193,7 +206,7 @@ export class Game {
         sky.position.y = 0;
         this.scene.add(sky);
 
-        // Create clouds
+        // Enhanced cloud creation
         const createCloud = () => {
             const cloud = new THREE.Group();
             const cloudMaterial = new THREE.MeshPhongMaterial({
@@ -201,16 +214,18 @@ export class Game {
                 emissive: 0x555555,
                 emissiveIntensity: 0.1,
                 transparent: true,
-                opacity: 0.9
+                opacity: 0.85
             });
 
-            // Create several spheres for each cloud
+            // More varied cloud shapes
             const sphereSizes = [
                 { radius: 1, x: 0, y: 0, z: 0 },
-                { radius: 0.8, x: 0.8, y: -0.2, z: 0 },
-                { radius: 0.7, x: -0.8, y: -0.2, z: 0 },
-                { radius: 0.7, x: 0.4, y: 0.2, z: 0.3 },
-                { radius: 0.6, x: -0.4, y: 0.2, z: -0.3 }
+                { radius: 0.9, x: 1, y: -0.2, z: 0.3 },
+                { radius: 0.8, x: -1, y: -0.1, z: -0.2 },
+                { radius: 0.85, x: 0.5, y: 0.2, z: 0.5 },
+                { radius: 0.75, x: -0.6, y: 0.3, z: -0.4 },
+                { radius: 0.7, x: 0.7, y: -0.3, z: -0.3 },
+                { radius: 0.65, x: -0.8, y: 0.1, z: 0.4 }
             ];
 
             sphereSizes.forEach(({ radius, x, y, z }) => {
@@ -223,23 +238,24 @@ export class Game {
             return cloud;
         };
 
-        // Add multiple clouds at random positions
-        for (let i = 0; i < 20; i++) {
+        // Add more clouds with varied placement
+        for (let i = 0; i < 40; i++) {  // Increased from 20 to 40 clouds
             const cloud = createCloud();
             
-            // Position cloud randomly in the sky
+            // More varied cloud placement
             const angle = Math.random() * Math.PI * 2;
-            const radius = Math.random() * 200 + 100; // Distance from center
-            const height = Math.random() * 100 + 50;  // Height above ground
+            const radius = Math.random() * 250 + 50;  // Increased range
+            const height = Math.random() * 120 + 40;  // Increased height range
             
             cloud.position.x = Math.cos(angle) * radius;
             cloud.position.y = height;
             cloud.position.z = Math.sin(angle) * radius;
             
-            // Random rotation and scale for variety
-            cloud.rotation.y = Math.random() * Math.PI;
-            const scale = Math.random() * 2 + 1;
-            cloud.scale.set(scale, scale * 0.6, scale);
+            // More varied rotation and scaling
+            cloud.rotation.y = Math.random() * Math.PI * 2;
+            cloud.rotation.z = Math.random() * 0.2 - 0.1;  // Slight tilt
+            const scale = Math.random() * 2.5 + 0.8;  // More size variation
+            cloud.scale.set(scale, scale * 0.5, scale * 0.8);
             
             this.scene.add(cloud);
         }
@@ -322,42 +338,90 @@ export class Game {
             }
         };
 
-        // Create ground plane
-        const groundGeometry = new THREE.PlaneGeometry(200, 200, 50, 50);
-        const groundMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0x90EE90,  // Light green
-            side: THREE.DoubleSide,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.6
-        });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-
-        // Create solid ground underneath
+        // Create solid ground
         const solidGroundGeometry = new THREE.PlaneGeometry(200, 200);
         const solidGroundMaterial = new THREE.MeshPhongMaterial({ 
             color: 0x228B22,  // Forest green
             side: THREE.DoubleSide
         });
         const solidGround = new THREE.Mesh(solidGroundGeometry, solidGroundMaterial);
-
-        // Position grounds
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -0.49;
-        ground.position.z = -50;
-
         solidGround.rotation.x = -Math.PI / 2;
         solidGround.position.y = -0.5;
         solidGround.position.z = -50;
-
-        this.scene.add(ground);
         this.scene.add(solidGround);
+
+        // Add grass sprites
+        this.addGrassToScene();
 
         // Add trees after creating the ground
         addTrees();
 
-        // Add some fog for depth effect with adjusted values
-        const fogColor = new THREE.Color('#87CEEB');  // Match sky color
-        this.scene.fog = new THREE.Fog(fogColor, 50, 150);  // Start further away and fade more gradually
+        // Add some fog for depth effect
+        const fogColor = new THREE.Color('#87CEEB');
+        this.scene.fog = new THREE.Fog(fogColor, 50, 150);
+    }
+
+    private createGrassSprite(): THREE.Sprite {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 64;
+        canvas.height = 64;
+
+        if (context) {
+            // Draw a simple grass blade
+            context.fillStyle = '#90EE90';  // Light green
+            context.strokeStyle = '#228B22'; // Forest green
+            context.lineWidth = 1;
+
+            // Draw three blades of grass
+            for (let i = 0; i < 3; i++) {
+                const x = 20 + i * 12;
+                context.beginPath();
+                context.moveTo(x, 64);
+                context.quadraticCurveTo(
+                    x + (Math.random() * 10 - 5),
+                    40,
+                    x + (Math.random() * 16 - 8),
+                    10
+                );
+                context.stroke();
+                context.fill();
+            }
+        }
+
+        const texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        const material = new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            depthWrite: false
+        });
+
+        return new THREE.Sprite(material);
+    }
+
+    private addGrassToScene(): void {
+        // Add grass sprites around the scene
+        for (let i = 0; i < 1000; i++) {
+            const grass = this.createGrassSprite();
+            
+            // Random position within bounds
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.random() * 90 + 10; // Between 10 and 100 units from center
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius - 50;
+
+            // Don't place grass too close to the road
+            if (Math.abs(x) < 5) continue;
+
+            grass.position.set(x, -0.3, z);
+            
+            // Random scale and rotation for variety
+            const scale = Math.random() * 0.3 + 0.2;
+            grass.scale.set(scale, scale * 1.5, 1);
+            grass.material.rotation = Math.random() * 0.2 - 0.1;
+
+            this.scene.add(grass);
+        }
     }
 } 

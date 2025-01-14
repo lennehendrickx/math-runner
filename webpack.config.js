@@ -30,7 +30,7 @@ module.exports = {
     plugins: [
         new CopyWebpackPlugin({
             patterns: [
-                { from: 'public', to: '' }
+                { from: 'public', to: 'public' }
             ]
         })
     ]

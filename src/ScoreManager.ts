@@ -67,7 +67,7 @@ export class ScoreManager {
     }
 
     private updateDisplay(): void {
-        this.scoreElement.textContent = `Score: ${this.score.toString().padStart(5, '0')} ✨`;
+        this.scoreElement.textContent = `Score: ${this.score} ✨`;
     }
 
     updateSpeed(multiplier: number): void {
@@ -119,5 +119,9 @@ export class ScoreManager {
         setTimeout(() => {
             document.body.removeChild(animation);
         }, 500);
+    }
+
+    getScore(): number {
+        return this.score;
     }
 } 
