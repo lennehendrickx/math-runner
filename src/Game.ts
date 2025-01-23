@@ -21,6 +21,9 @@ export class Game {
     private rainEffect: RainEffect;
     private sunEffect: SunEffect;
     private flowerEffect: FlowerEffect;
+    private touchStartX: number = 0;
+    private touchStartY: number = 0;
+    private isTouching: boolean = false;
 
     constructor() {
         this.scene = new THREE.Scene();
@@ -38,6 +41,7 @@ export class Game {
         this.blocks = [];
         this.lastBlockSpawnTime = 0;
         this.scoreManager = new ScoreManager();
+        this.setupTouchControls();
     }
 
     private generateQuestion(): { num1: number; num2: number } {
@@ -522,5 +526,53 @@ export class Game {
         
         // Update score display with multiplier
         this.scoreManager.updateMultiplier(this.scoreMultiplier);
+    }
+
+    private setupTouchControls(): void {
+        // Add touch event listeners
+        document.addEventListener('touchstart', this.handleTouchStart.bind(this));
+        document.addEventListener('touchmove', this.handleTouchMove.bind(this));
+        document.addEventListener('touchend', this.handleTouchEnd.bind(this));
+    }
+
+    private handleTouchStart(e: TouchEvent): void {
+        if (e.touches.length === 1) {
+            this.touchStartX = e.touches[0].clientX;
+            this.touchStartY = e.touches[0].clientY;
+            this.isTouching = true;
+        }
+    }
+
+    private handleTouchMove(e: TouchEvent): void {
+        if (!this.isTouching) return;
+
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - this.touchStartX;
+        const deltaY = touch.clientY - this.touchStartY;
+        const threshold = 30; // Minimum swipe distance
+
+        // Handle horizontal movement
+        if (Math.abs(deltaX) > threshold) {
+            if (deltaX > 0) {
+                this.player.handleInput('ArrowRight');
+            } else {
+                this.player.handleInput('ArrowLeft');
+            }
+            this.touchStartX = touch.clientX;
+        }
+
+        // Handle vertical movement
+        if (Math.abs(deltaY) > threshold) {
+            if (deltaY > 0) {
+                this.player.handleInput('ArrowDown');
+            } else {
+                this.player.handleInput('ArrowUp');
+            }
+            this.touchStartY = touch.clientY;
+        }
+    }
+
+    private handleTouchEnd(): void {
+        this.isTouching = false;
     }
 } 

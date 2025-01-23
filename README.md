@@ -19,6 +19,10 @@ A fun and educational 3D game where you solve multiplication problems while runn
    - 🔥 Combo multiplier: Get bonus points for consecutive correct answers!
    - 🌟 Score multipliers: x1.5 (3 correct), x2.0 (5 correct), x3.0 (10 correct)
 
+On mobile devices:
+- Swipe left/right to choose answers
+- Swipe up/down to adjust position
+
 ## 🚀 Getting Started
 
 ### Prerequisites
