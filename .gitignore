@@ -44,3 +44,15 @@ yarn-error.log*
 
 # parcel-bundler cache
 .cache
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# System Files
+Thumbs.db
