@@ -1,4 +1,4 @@
-import { THREE } from './three-imports';
+import * as THREE from 'three';
 
 export function createTextSprite(text: string): THREE.Sprite {
     const canvas = document.createElement('canvas');

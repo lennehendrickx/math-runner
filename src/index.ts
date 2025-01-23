@@ -1,4 +1,4 @@
-import { THREE } from './three-imports';
+import * as THREE from 'three';
 import { Game } from './Game';
 
 window.addEventListener('DOMContentLoaded', () => {

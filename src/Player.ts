@@ -1,4 +1,4 @@
-import { THREE } from './three-imports';
+import * as THREE from 'three';
 
 export class Player {
     private mesh: THREE.Group;

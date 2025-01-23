@@ -1,6 +1,5 @@
+// Single import and export of Three.js
 import * as THREE from 'three';
-
-// Export the namespace
 export { THREE };
 
 // Also export individual commonly used items

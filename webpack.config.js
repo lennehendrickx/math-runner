@@ -14,8 +14,8 @@ module.exports = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
-        fallback: {
-            'three': require.resolve('three')
+        alias: {
+            'three': path.resolve(__dirname, 'node_modules/three')
         }
     },
     output: {

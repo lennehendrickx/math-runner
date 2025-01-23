@@ -1,4 +1,4 @@
-import { THREE } from './three-imports';
+import * as THREE from 'three';
 
 export class RainEffect {
     private raindrops: THREE.Points;
