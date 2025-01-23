@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { THREE } from './three-imports';
 import { Player } from './Player';
 import { createTextSprite } from './TextSprite';
 

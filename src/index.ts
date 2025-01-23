@@ -1,3 +1,4 @@
+import { THREE } from './three-imports';
 import { Game } from './Game';
 
 window.addEventListener('DOMContentLoaded', () => {

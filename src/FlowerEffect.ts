@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { THREE } from './three-imports';
 
 export class FlowerEffect {
     private scene: THREE.Scene;

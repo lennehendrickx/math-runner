@@ -12,11 +12,12 @@
   },
   "devDependencies": {
     "@types/three": "^0.162.0",
+    "copy-webpack-plugin": "^11.0.0",
+    "html-webpack-plugin": "^5.6.3",
     "ts-loader": "^9.5.1",
     "typescript": "^5.4.2",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.2",
-    "copy-webpack-plugin": "^11.0.0"
+    "webpack-dev-server": "^5.0.2"
   }
 }
